@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Interviewer – Buddy</title>
+  <meta name="description"
+    content="Buddy – Your AI-powered voice interviewer. Practice HR and role-specific questions." />
+  <link rel="stylesheet" href="/static/style.css" />
+  <!-- React 18 (no Babel needed — plain JS createElement) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    .home-container {
+      max-width: 520px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.35);
+      color: #a78bfa;
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .hero-badge::before {
+      content: "✦";
+      font-size: 0.65rem;
+    }
+
+    .feature-list {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .feature-item::before {
+      content: "✓";
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .section-label {
+      text-align: left;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .start-form select {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.97rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a78bfa' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .start-form select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+    }
+
+    .start-form select option {
+      background: #14142a;
+      color: var(--text);
+    }
+
+    .field-error {
+      color: #f87171;
+      font-size: 0.78rem;
+      margin-top: 6px;
+      display: block;
+      min-height: 18px;
+    }
+  </style>
+</head>
+
+<body class="page-home">
+  <div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <div id="root"></div>
+
+  <script>
+    const { createElement: h, useState, useCallback } = React;
+
+    const JOB_ROLES = [
+      "Software Developer",
+      "Frontend Developer",
+      "Backend Developer",
+      "Full Stack Developer",
+      "Python Developer",
+      "Java Developer",
+      "Data Scientist",
+      "Machine Learning Engineer",
+      "AI Engineer",
+      "AI/ML Research Scientist",
+      "Data Analyst",
+      "DevOps Engineer",
+      "Cloud Engineer",
+      "Cybersecurity Analyst",
+      "UI/UX Designer",
+      "Mobile Developer (Android)",
+      "Mobile Developer (iOS)",
+      "React Native Developer",
+      "Database Administrator",
+      "QA / Test Engineer",
+      "Project Manager",
+      "Business Analyst",
+      "Product Manager",
+      "Embedded Systems Engineer",
+      "Network Engineer",
+      "HR Manager",
+    ];
+
+    const NAME_REGEX = /^[A-Za-z\s'\-\.]{2,60}$/;
+
+    function validateName(val) {
+      if (!val.trim()) return "Name is required.";
+      if (/\d/.test(val)) return "Name must contain only letters, not numbers.";
+      if (!NAME_REGEX.test(val.trim())) return "Name must be 2–60 alphabetic characters.";
+      return "";
+    }
+
+    function App() {
+      const [name, setName] = useState("");
+      const [role, setRole] = useState("");
+      const [nameError, setNameError] = useState("");
+      const [roleError, setRoleError] = useState("");
+      const [loading, setLoading] = useState(false);
+
+      function handleNameChange(e) {
+        const val = e.target.value;
+        setName(val);
+        if (nameError) setNameError(validateName(val));
+      }
+
+      function handleRoleChange(e) {
+        setRole(e.target.value);
+        if (roleError && e.target.value) setRoleError("");
+      }
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        const nErr = validateName(name);
+        const rErr = role ? "" : "Please select a job role.";
+        setNameError(nErr);
+        setRoleError(rErr);
+        if (nErr || rErr) return;
+
+        setLoading(true);
+        const fd = new FormData();
+        fd.append("name", name.trim());
+        fd.append("role", role);
+        try {
+          const res = await fetch("/api/ai/start", { method: "POST", body: fd });
+          const data = await res.json();
+          window.location.href = "/ai-voice-interview/" + data.session_id;
+        } catch (err) {
+          setLoading(false);
+          alert("Could not connect to server. Make sure the server is running.");
+        }
+      }
+
+      return h("div", { className: "home-container" },
+        h("div", { className: "logo-ring" },
+          h("div", { className: "logo-inner" }, "🤖")
+        ),
+        h("div", { className: "hero-badge" }, "🎙️ Voice Interview"),
+        h("h1", { className: "home-title" }, "Meet Buddy"),
+        h("p", { className: "home-sub" }, "AI Interviewer"),
+
+        h("div", { className: "feature-list" },
+          h("div", { className: "feature-item" }, "AI reads questions aloud"),
+          h("div", { className: "feature-item" }, "Voice answer recording"),
+          h("div", { className: "feature-item" }, "Up to 15 questions"),
+          h("div", { className: "feature-item" }, "Final score & feedback"),
+        ),
+
+        h("div", { className: "section-label" }, "Your details"),
+        h("form", { className: "start-form", onSubmit: handleSubmit, noValidate: true },
+
+          // Name field
+          h("div", { className: "input-group" },
+            h("label", { htmlFor: "candidateName" }, "Full Name"),
+            h("input", {
+              type: "text", id: "candidateName", name: "name",
+              placeholder: "e.g. Harish Kumar",
+              value: name, autoComplete: "off", required: true,
+              onChange: handleNameChange,
+              onBlur: () => setNameError(validateName(name)),
+            }),
+            nameError && h("span", { className: "field-error" }, nameError),
+          ),
+
+          // Role dropdown
+          h("div", { className: "input-group" },
+            h("label", { htmlFor: "jobRole" }, "Job Role / Position"),
+            h("select", {
+              id: "jobRole", name: "role",
+              value: role, required: true,
+              onChange: handleRoleChange,
+            },
+              h("option", { value: "", disabled: true }, "— Select a role —"),
+              ...JOB_ROLES.map(r => h("option", { key: r, value: r }, r))
+            ),
+            roleError && h("span", { className: "field-error" }, roleError),
+          ),
+
+          h("button", {
+            type: "submit", className: "btn-primary", id: "startBtn", disabled: loading
+          },
+            h("span", { className: "btn-text" }, loading ? "Starting…" : "Start Voice Interview"),
+            h("span", { className: "btn-icon" }, "🎙️"),
+          ),
+        )
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(h(App, null));
+  </script>
+</body>
+
+</html>

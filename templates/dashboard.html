@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candidates Dashboard – Buddy</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body class="page-dashboard">
+    <div class="bg-orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+    </div>
+
+    <div class="dashboard-container">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <h1>📊 Candidates Dashboard</h1>
+            <a href="/" class="btn-outline">← Back to Home</a>
+        </div>
+
+        {% if candidates %}
+
+        <!-- Stats -->
+        <div class="dash-stats">
+            <div class="stat-card">
+                <div class="stat-num">{{ candidates | length }}</div>
+                <div class="stat-lbl">Total Candidates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">
+                    {% set total_avg = (candidates | map(attribute='Total_Score') | map('float') | sum) / (candidates |
+                    length) %}
+                    {{ total_avg | round(1) }}
+                </div>
+                <div class="stat-lbl">Avg Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">{{ candidates | selectattr('Grade', 'in', ['A+', 'A']) | list | length }}</div>
+                <div class="stat-lbl">Top Performers (A / A+)</div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+            <div class="dash-search">
+                <input type="text" id="searchInput" placeholder="🔍  Search candidates by name…"
+                    oninput="filterTable()" />
+            </div>
+            <table class="dash-table" id="candidatesTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Role / Skills</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for c in candidates %}
+                    <tr>
+                        <td style="color:var(--muted);font-size:0.82rem;">{{ loop.index }}</td>
+                        <td class="td-name">{{ c.Name }}</td>
+                        <td class="td-date">{{ c.Timestamp[:10] if c.Timestamp else 'N/A' }}</td>
+                        <td class="td-skills">
+                            {% if c.Skills and c.Skills != 'N/A' %}
+                            {% for sk in c.Skills.split(', ')[:4] %}
+                            <span class="skill-chip-sm">{{ sk }}</span>
+                            {% endfor %}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td style="font-weight:700;color:var(--text);">{{ c.Total_Score }} / {{ c.Max_Score }}</td>
+                        <td>
+                            <span class="grade-badge-sm grade-{{ c.Grade | replace('+','plus') }}">{{ c.Grade }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <div style="font-size:3rem;margin-bottom:16px;">📭</div>
+            <p>No candidates yet. Completed interviews will appear here.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        function filterTable() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                const name = row.querySelector('.td-name');
+                row.style.display = (!name || name.textContent.toLowerCase().includes(q)) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>

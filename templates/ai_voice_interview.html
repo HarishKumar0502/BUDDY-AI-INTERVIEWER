@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Voice Interview – Buddy</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <style>
+        .page-ai-voice {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ──────────────────────────────────────────── */
+        .aiv-sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: rgba(10, 10, 26, 0.88);
+            backdrop-filter: blur(24px);
+            border-right: 1px solid var(--border2);
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .aiv-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .aiv-brand-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: var(--glow-sm);
+        }
+
+        .aiv-brand-info {
+            line-height: 1.2;
+        }
+
+        .aiv-brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .aiv-brand-tag {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            border-radius: 4px;
+            padding: 1px 6px;
+        }
+
+        .aiv-candidate-card {
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .aiv-candidate-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .aiv-candidate-role {
+            font-size: 0.72rem;
+            color: #a78bfa;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+            border-radius: 6px;
+            padding: 3px 8px;
+            display: inline-block;
+        }
+
+        /* Timer */
+        .aiv-timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .aiv-timer-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: blink 1.5s step-start infinite;
+        }
+
+        .aiv-timer-val {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text2);
+            font-size: 0.9rem;
+        }
+
+        /* Progress */
+        .aiv-progress-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .aiv-counter-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+        }
+
+        .aiv-counter-row {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .aiv-counter-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: #a78bfa;
+            line-height: 1;
+        }
+
+        .aiv-counter-total {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .aiv-progress-bar-bg {
+            height: 5px;
+            background: var(--surface3);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .aiv-progress-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.6s ease;
+        }
+
+        /* Exit */
+        .btn-aiv-exit {
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.28);
+            color: var(--red);
+            font-size: 0.84rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-aiv-exit:hover:not(:disabled) {
+            background: rgba(248, 113, 113, 0.18);
+            border-color: var(--red);
+        }
+
+        .btn-aiv-exit:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+        }
+
+        /* History */
+        .aiv-hist-label {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-weight: 700;
+        }
+
+        .aiv-history {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .aiv-hist-item {
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 11px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.45;
+            animation: fadeSlideUp 0.3s ease;
+        }
+
+        .aiv-hist-item .hist-q {
+            color: #a78bfa;
+            font-weight: 700;
+            margin-bottom: 3px;
+            font-size: 0.68rem;
+        }
+
+        /* ── Main Panel ────────────────────────────────────────── */
+        .aiv-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+            gap: 26px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Buddy avatar */
+        .buddy-speaker {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: var(--glow);
+            animation: pulse-ring 2.5s ease-in-out infinite;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+
+        .buddy-speaker.speaking {
+            animation: speaking-ring 0.55s ease-in-out infinite alternate;
+        }
+
+        /* Sound waves */
+        .sound-waves {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 28px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sound-waves.active {
+            opacity: 1;
+        }
+
+        .wave-bar {
+            width: 4px;
+            border-radius: 99px;
+            background: linear-gradient(to top, var(--accent), var(--accent2));
+        }
+
+        .wave-bar:nth-child(1) {
+            height: 8px;
+            animation: wave1 0.8s 0.0s ease-in-out infinite alternate;
+        }
+
+        .wave-bar:nth-child(2) {
+            height: 18px;
+            animation: wave1 0.8s 0.15s ease-in-out infinite alternate;
+        }
+
+        .wave-bar:nth-child(3) {
+            height: 28px;
+            animation: wave1 0.8s 0.05s ease-in-out infinite alternate;
+        }
+
+        .wave-bar:nth-child(4) {
+            height: 18px;
+            animation: wave1 0.8s 0.2s ease-in-out infinite alternate;
+        }
+
+        .wave-bar:nth-child(5) {
+            height: 8px;
+            animation: wave1 0.8s 0.1s ease-in-out infinite alternate;
+        }
+
+        /* Question card */
+        .aiv-question-card {
+            background: rgba(13, 13, 30, 0.82);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            padding: 30px 36px;
+            max-width: 680px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .aiv-question-card.slide-out {
+            transform: translateX(-40px);
+            opacity: 0;
+        }
+
+        .aiv-question-card.slide-in {
+            animation: slideIn 0.35s ease;
+        }
+
+        .aiv-q-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #a78bfa;
+            border-radius: 99px;
+            padding: 4px 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .aiv-q-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.55;
+            color: var(--text);
+        }
+
+        /* Phase */
+        .aiv-phase {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .phase-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: blink 1.5s step-start infinite;
+        }
+
+        .phase-dot.green {
+            background: var(--green);
+        }
+
+        .phase-dot.red {
+            background: var(--red);
+            animation: rec-pulse 1.5s ease-in-out infinite;
+        }
+
+        .phase-dot.off {
+            background: var(--muted);
+            animation: none;
+        }
+
+        /* Transcript */
+        .aiv-transcript-wrap {
+            position: relative;
+            max-width: 680px;
+            width: 100%;
+        }
+
+        .aiv-transcript {
+            background: var(--surface3);
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            width: 100%;
+            min-height: 88px;
+            max-height: 180px;
+            font-size: 0.93rem;
+            color: var(--text);
+            line-height: 1.65;
+            resize: vertical;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .aiv-transcript::placeholder {
+            color: var(--muted);
+            font-style: italic;
+            font-size: 0.88rem;
+        }
+
+        .aiv-transcript:focus {
+            outline: none;
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        .aiv-transcript.active {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
+        }
+
+        .aiv-transcript-hint {
+            font-size: 0.68rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+            letter-spacing: 0.03em;
+        }
+
+        /* Mic level meter */
+        .aiv-mic-meter {
+            width: 100%;
+            height: 4px;
+            background: var(--surface3);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 6px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .aiv-mic-meter.visible {
+            opacity: 1;
+        }
+
+        .aiv-mic-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), #34d399, var(--red));
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.08s linear;
+        }
+
+        /* Controls */
+        .aiv-controls {
+            display: flex;
+            gap: 12px;
+            max-width: 680px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-aiv-record {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 26px;
+            border-radius: 99px;
+            background: var(--surface3);
+            border: 2px solid var(--border2);
+            color: var(--text);
+            font-size: 0.93rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.22s;
+        }
+
+        .btn-aiv-record:hover {
+            border-color: var(--accent);
+            background: rgba(124, 58, 237, 0.15);
+        }
+
+        .btn-aiv-record.recording {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: var(--red);
+            color: var(--red);
+            animation: rec-pulse 1.5s ease-in-out infinite;
+        }
+
+        .btn-aiv-record:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+        }
+
+        .btn-aiv-submit {
+            padding: 13px 26px;
+            border-radius: 99px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none;
+            color: #fff;
+            font-size: 0.93rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-aiv-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(124, 58, 237, 0.55);
+        }
+
+        .btn-aiv-submit:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-aiv-mute {
+            padding: 11px 18px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            font-size: 0.84rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-aiv-mute:hover {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        /* Evaluation */
+        #finishedScreen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+            animation: fadeSlideUp 0.5s ease both;
+        }
+
+        .finished-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .finished-eval {
+            background: rgba(13, 13, 30, 0.88);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            text-align: left;
+            font-size: 0.91rem;
+            line-height: 1.78;
+            color: var(--text2);
+            white-space: pre-wrap;
+            box-shadow: var(--shadow);
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="page-ai-voice">
+    <div class="bg-orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+    </div>
+
+    <!-- ── Sidebar ──────────────────────────────────────── -->
+    <aside class="aiv-sidebar">
+        <div class="aiv-brand">
+            <div class="aiv-brand-avatar">🤖</div>
+            <div class="aiv-brand-info">
+                <div class="aiv-brand-name">Buddy</div>
+                <span class="aiv-brand-tag">AI VOICE</span>
+            </div>
+        </div>
+
+        <!-- Candidate -->
+        <div class="aiv-candidate-card">
+            <div class="aiv-candidate-name" id="sidebarName">Candidate</div>
+            <div class="aiv-candidate-role" id="sidebarRole">Loading…</div>
+        </div>
+
+        <!-- Timer -->
+        <div class="aiv-timer">
+            <div class="aiv-timer-dot"></div>
+            <span>Time:</span>
+            <span class="aiv-timer-val" id="timerDisplay">0:00</span>
+        </div>
+
+        <!-- Q Progress -->
+        <div class="aiv-progress-block">
+            <div class="aiv-counter-label">Questions</div>
+            <div class="aiv-counter-row">
+                <div class="aiv-counter-num" id="qCount">0</div>
+            </div>
+            <div class="aiv-progress-bar-bg">
+                <div class="aiv-progress-bar-fill" id="qProgressBar"></div>
+            </div>
+        </div>
+
+        <!-- Exit -->
+        <button class="btn-aiv-exit" id="exitBtn" onclick="exitInterview()">
+            🚪 Exit &amp; Evaluate
+        </button>
+
+        <!-- History -->
+        <div class="aiv-hist-label">History</div>
+        <div class="aiv-history" id="historyList"></div>
+    </aside>
+
+    <!-- ── Main Panel ──────────────────────────────────── -->
+    <main class="aiv-main" id="mainPanel">
+
+        <div class="buddy-speaker" id="buddyAvatar">🤖</div>
+
+        <div class="sound-waves" id="soundWaves">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+
+        <div class="aiv-question-card" id="questionCard">
+            <div class="aiv-q-label" id="qLabel">Initialising…</div>
+            <p class="aiv-q-text" id="qText">Please wait while Buddy prepares your interview.</p>
+        </div>
+
+        <div class="aiv-phase" id="phaseIndicator">
+            <div class="phase-dot off" id="phaseDot"></div>
+            <span id="phaseText">Starting…</span>
+        </div>
+
+        <div class="aiv-transcript-wrap">
+            <textarea class="aiv-transcript" id="transcriptBox" rows="3"
+                placeholder="Your spoken answer will appear here… You can edit it before submitting."
+                oninput="onTranscriptEdit()"></textarea>
+            <div class="aiv-mic-meter" id="micMeter">
+                <div class="aiv-mic-meter-fill" id="micMeterFill"></div>
+            </div>
+            <div class="aiv-transcript-hint" id="transcriptHint"></div>
+        </div>
+
+        <div class="aiv-controls">
+            <button class="btn-aiv-mute" id="muteBtn" onclick="toggleMute()">🔊 Mute</button>
+            <button class="btn-aiv-record" id="recordBtn" onclick="toggleRecord()">
+                <span id="micIcon">🎙️</span>
+                <span id="recordLabel">Tap to Record</span>
+            </button>
+            <button class="btn-aiv-submit" id="submitBtn" onclick="submitAnswer()" disabled>
+                Submit Answer ➤
+            </button>
+        </div>
+    </main>
+
+    <!-- ── Evaluation Screen ──────────────────────────── -->
+    <div class="aiv-main" id="finishedScreen">
+        <div style="font-size:3.5rem;">🎉</div>
+        <div class="finished-title">Interview Complete!</div>
+        <div class="finished-eval" id="evalBox"></div>
+        <a href="/" class="btn-primary"
+            style="max-width:280px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;">
+            ← Start New Interview
+        </a>
+    </div>
+
+    <script>
+        const SESSION_ID = "{{ session_id }}";
+        const MAX_QUESTIONS = 15;
+        let questionCount = 0;
+        let currentAnswer = "";
+        let isRecording = false;
+        let isMuted = false;
+        let isBusy = false;
+        let isFinished = false;
+
+        // ── Timer ───────────────────────────────────────────────────────────────
+        let timerSeconds = 0;
+        const timerEl = document.getElementById('timerDisplay');
+        const timerInterval = setInterval(() => {
+            if (isFinished) return;
+            timerSeconds++;
+            const m = Math.floor(timerSeconds / 60);
+            const s = timerSeconds % 60;
+            timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+        }, 1000);
+
+        // ── TTS ─────────────────────────────────────────────────────────────────
+        const synth = window.speechSynthesis;
+        let ttsVoice = null;
+        function loadVoices() {
+            const voices = synth.getVoices();
+            ttsVoice = voices.find(v => v.lang.startsWith("en") && /female|zira|hazel|samantha|karen/i.test(v.name))
+                || voices.find(v => v.lang.startsWith("en")) || voices[0] || null;
+        }
+        loadVoices();
+        if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+
+        function speak(text, onEnd) {
+            if (isMuted) { if (onEnd) onEnd(); return; }
+            synth.cancel();
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.voice = ttsVoice; utt.rate = 0.92; utt.pitch = 1.05; utt.volume = 1;
+            const avatar = document.getElementById("buddyAvatar");
+            const waves = document.getElementById("soundWaves");
+            avatar.classList.add("speaking");
+            waves.classList.add("active");
+            utt.onend = () => {
+                avatar.classList.remove("speaking");
+                waves.classList.remove("active");
+                if (onEnd) onEnd();
+            };
+            synth.speak(utt);
+        }
+        function speakAndWait(text) { return new Promise(r => speak(text, r)); }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById("muteBtn").textContent = isMuted ? "🔇 Unmute" : "🔊 Mute";
+            if (isMuted) { synth.cancel(); document.getElementById("buddyAvatar").classList.remove("speaking"); document.getElementById("soundWaves").classList.remove("active"); }
+        }
+
+        // ── Voice Recording — Fine-tuned ────────────────────────────────────────
+        let mediaRecorder = null, audioChunks = [], mediaStream = null;
+        let audioCtx = null, analyser = null, micSource = null;
+        let silenceTimer = null, levelRAF = null;
+        const SILENCE_THRESHOLD = 4;    // RMS below this = silence (0-100 scale)
+        const SILENCE_DURATION_MS = 2500; // auto-stop after 2.5 s of silence
+
+        async function initMic() {
+            if (mediaStream) return true;
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                        sampleRate: 16000,   // Whisper preferred sample rate
+                    }
+                });
+                return true;
+            } catch {
+                alert("Microphone access denied. Please allow microphone access and try again.");
+                return false;
+            }
+        }
+
+        function getBestMime() {
+            const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"];
+            for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+            return "";
+        }
+
+        async function toggleRecord() {
+            synth.cancel();
+            if (isRecording) { stopRecording(); return; }
+            const ok = await initMic();
+            if (ok) startRecording();
+        }
+
+        function startRecording() {
+            audioChunks = [];
+            const mime = getBestMime();
+            mediaRecorder = new MediaRecorder(mediaStream, mime ? { mimeType: mime } : {});
+            mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+            mediaRecorder.onstop = handleRecordingStop;
+            mediaRecorder.start(100);  // 100 ms chunks for more responsive handling
+            isRecording = true;
+
+            document.getElementById("recordBtn").classList.add("recording");
+            document.getElementById("micIcon").textContent = "⏹️";
+            document.getElementById("recordLabel").textContent = "Recording… Tap to Stop";
+            document.getElementById("transcriptBox").classList.add("active");
+            document.getElementById("micMeter").classList.add("visible");
+            setPhase("Recording your answer…", "red");
+
+            startLevelMeter();
+        }
+
+        function stopRecording() {
+            stopLevelMeter();
+            clearTimeout(silenceTimer);
+            if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+            isRecording = false;
+            document.getElementById("recordBtn").classList.remove("recording");
+            document.getElementById("micIcon").textContent = "🎙️";
+            document.getElementById("recordLabel").textContent = "Record Again";
+            document.getElementById("transcriptBox").classList.remove("active");
+            document.getElementById("micMeter").classList.remove("visible");
+            document.getElementById("micMeterFill").style.width = "0%";
+        }
+
+        // Real-time microphone level meter + auto-silence detection
+        function startLevelMeter() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            micSource = audioCtx.createMediaStreamSource(mediaStream);
+            micSource.connect(analyser);
+            const buf = new Uint8Array(analyser.frequencyBinCount);
+            const fill = document.getElementById("micMeterFill");
+            let silentSince = null;
+            let hasSpeech = false;
+
+            function tick() {
+                if (!isRecording) return;
+                analyser.getByteFrequencyData(buf);
+                // Compute RMS on 0-100 scale
+                let sum = 0;
+                for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+                const rms = Math.sqrt(sum / buf.length) / 2.55; // 0-100
+                fill.style.width = Math.min(rms * 2.2, 100) + "%";
+
+                // Track whether user has spoken yet
+                if (rms > SILENCE_THRESHOLD) {
+                    hasSpeech = true;
+                    silentSince = null;
+                    clearTimeout(silenceTimer);
+                } else if (hasSpeech) {
+                    // User spoke and is now silent — start countdown
+                    if (silentSince === null) silentSince = Date.now();
+                    const elapsed = Date.now() - silentSince;
+                    const remaining = Math.max(0, SILENCE_DURATION_MS - elapsed);
+                    const hint = document.getElementById("transcriptHint");
+                    hint.textContent = elapsed > 500
+                        ? `Auto-stopping in ${(remaining / 1000).toFixed(1)}s…`
+                        : "";
+                    if (elapsed >= SILENCE_DURATION_MS) {
+                        hint.textContent = "";
+                        stopRecording();
+                        return;
+                    }
+                }
+                levelRAF = requestAnimationFrame(tick);
+            }
+            levelRAF = requestAnimationFrame(tick);
+        }
+
+        function stopLevelMeter() {
+            if (levelRAF) { cancelAnimationFrame(levelRAF); levelRAF = null; }
+            if (micSource) { try { micSource.disconnect(); } catch { } micSource = null; }
+            document.getElementById("transcriptHint").textContent = "";
+        }
+
+        async function handleRecordingStop() {
+            setPhase("Transcribing…", "");
+            const mime = mediaRecorder.mimeType || "audio/webm";
+            const ext = mime.includes("ogg") ? "ogg" : mime.includes("mp4") ? "mp4" : "webm";
+            const blob = new Blob(audioChunks, { type: mime });
+
+            // Guard: skip tiny blobs (likely pure silence / noise)
+            if (blob.size < 1500) {
+                setPhase("Nothing detected — tap 🎙️ to record", "off");
+                return;
+            }
+
+            const fd = new FormData();
+            fd.append("audio", blob, "recording." + ext);
+            try {
+                const res = await fetch("/api/transcribe", { method: "POST", body: fd });
+                const data = await res.json();
+                const tb = document.getElementById("transcriptBox");
+                if (data.transcript) {
+                    // Append to existing editable text
+                    const prev = tb.value.trim();
+                    tb.value = prev ? prev + " " + data.transcript : data.transcript;
+                    currentAnswer = tb.value;
+                    document.getElementById("submitBtn").disabled = false;
+                    setPhase("Answer ready — edit or submit", "green");
+                } else {
+                    setPhase("No speech detected — try again", "off");
+                }
+            } catch (e) {
+                console.error("STT error:", e);
+                setPhase("⚠️ Transcription error — try again", "off");
+            }
+        }
+
+        // Keep currentAnswer in sync when user edits the transcript manually
+        function onTranscriptEdit() {
+            currentAnswer = document.getElementById("transcriptBox").value.trim();
+            document.getElementById("submitBtn").disabled = !currentAnswer;
+        }
+
+        // ── Groq ───────────────────────────────────────────────────────────────
+        async function sendToGroq(message) {
+            isBusy = true;
+            document.getElementById("recordBtn").disabled = true;
+            document.getElementById("submitBtn").disabled = true;
+            document.getElementById("exitBtn").disabled = true;
+            setPhase("Buddy is thinking…", "");
+            try {
+                const res = await fetch("/api/ai/chat/" + SESSION_ID, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message }),
+                });
+                const data = await res.json();
+                if (data.finished) { showEvaluation(data.reply); return; }
+                if (data.reply.trim().endsWith("?")) { questionCount++; updateQCounter(); }
+                showQuestion("Question " + questionCount, data.reply);
+                addHistory(data.reply, message);
+                await speakAndWait(data.reply);
+                setPhase("Your turn — tap 🎙️ to answer", "green");
+                document.getElementById("recordBtn").disabled = false;
+                document.getElementById("exitBtn").disabled = false;
+                document.getElementById("recordLabel").textContent = "Tap to Record";
+            } catch (err) {
+                console.error(err);
+                setPhase("⚠️ Connection error", "off");
+                document.getElementById("exitBtn").disabled = false;
+            }
+            isBusy = false;
+        }
+
+        async function submitAnswer() {
+            const tb = document.getElementById("transcriptBox");
+            currentAnswer = tb.value.trim();
+            if (!currentAnswer || isBusy || isFinished) return;
+            const answer = currentAnswer;
+            currentAnswer = "";
+            tb.value = "";
+            document.getElementById("submitBtn").disabled = true;
+            await sendToGroq(answer);
+        }
+
+        async function exitInterview() {
+            if (isFinished || isBusy) return;
+            document.getElementById("exitBtn").disabled = true;
+            synth.cancel();
+            setPhase("Generating your evaluation…", "");
+            await sendToGroq("exit");
+        }
+
+        // ── UI Helpers ──────────────────────────────────────────────────────────
+        function updateQCounter() {
+            document.getElementById("qCount").textContent = questionCount;
+            document.getElementById("qProgressBar").style.width = Math.min((questionCount / MAX_QUESTIONS) * 100, 100) + "%";
+        }
+        function showQuestion(label, text) {
+            const card = document.getElementById("questionCard");
+            card.classList.add("slide-out");
+            setTimeout(() => {
+                document.getElementById("qLabel").textContent = label;
+                document.getElementById("qText").textContent = text;
+                card.classList.remove("slide-out"); card.classList.add("slide-in");
+                setTimeout(() => card.classList.remove("slide-in"), 400);
+            }, 280);
+        }
+        function addHistory(question, answer) {
+            const list = document.getElementById("historyList");
+            const item = document.createElement("div");
+            item.className = "aiv-hist-item";
+            const q = document.createElement("div"); q.className = "hist-q";
+            q.textContent = "Q" + questionCount + ": " + question.substring(0, 42) + (question.length > 42 ? "…" : "");
+            const a = document.createElement("div");
+            a.textContent = answer.substring(0, 55) + (answer.length > 55 ? "…" : "");
+            item.appendChild(q); item.appendChild(a);
+            list.insertBefore(item, list.firstChild);
+        }
+        function setPhase(text, dotClass) {
+            document.getElementById("phaseText").textContent = text;
+            const dot = document.getElementById("phaseDot");
+            dot.className = "phase-dot" + (dotClass ? " " + dotClass : "");
+        }
+        function showEvaluation(evalText) {
+            isFinished = true;
+            clearInterval(timerInterval);
+            document.getElementById("qCount").textContent = questionCount;
+            document.getElementById("qProgressBar").style.width = "100%";
+            document.getElementById("exitBtn").disabled = true;
+            document.getElementById("mainPanel").style.display = "none";
+            const fs = document.getElementById("finishedScreen");
+            fs.style.display = "flex";
+            document.getElementById("evalBox").textContent = evalText;
+            speak(evalText.substring(0, 400));
+        }
+
+        // ── Init ────────────────────────────────────────────────────────────────
+        async function init() {
+            try {
+                const res = await fetch("/api/ai/session-info/" + SESSION_ID);
+                if (res.ok) {
+                    const info = await res.json();
+                    document.getElementById("sidebarName").textContent = info.name || "Candidate";
+                    document.getElementById("sidebarRole").textContent = info.role || "Interview";
+                }
+            } catch (e) { document.getElementById("sidebarRole").textContent = "AI Interview"; }
+
+            setPhase("Buddy is preparing…", "");
+            await speakAndWait("Hello and welcome! I am Buddy, your AI technical interviewer. I will ask you up to 15 questions based on your role. Take your time and answer clearly. Let us begin.");
+            await sendToGroq("Hello, I am ready to start the interview. Please ask me the first question.");
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
