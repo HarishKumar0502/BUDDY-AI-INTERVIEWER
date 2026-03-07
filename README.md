@@ -10,7 +10,7 @@ Designed to help candidates improve communication skills, confidence, and techni
 
 ✨ Core Features
 
-🎤 100% Voice-Based Interview System
+🎤 100% Voice-Based Interview System.
 🧠 Role-Based Question Generation
 🔄 Real-Time AI Follow-Up Questions
 📊 Intelligent Response Evaluation
